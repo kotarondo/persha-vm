@@ -1,0 +1,30 @@
+{
+    "name": "persha-vm",
+    "version": "0.0.4",
+    "description": "Persistent JavaScript Engine",
+    "author": "Kotaro Endo <kotarondo@gmail.com>",
+    "license": "BSD-3-Clause",
+    "keywords": [
+        "persistence",
+        "javascript"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/kotarondo/persha-vm.git"
+    },
+    "bugs": {
+        "url": "https://github.com/kotarondo/persha-vm/issues"
+    },
+    "engines": {
+        "node": ">=6.5"
+    },
+    "dependencies": {},
+    "devDependencies": {},
+    "files": [
+        "src",
+        "index.js"
+    ],
+    "scripts": {
+        "test": "./test/run-tests.sh"
+    }
+}
