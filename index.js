@@ -35,7 +35,7 @@ var fs = require('fs');
 var path = require('path');
 var vm = require('vm');
 
-var filenames = ["helper.js", "type_constants.js", "import.js", "export.js", "opaque.js", "snapshot.js", "unicode.js", "regexp_compiler.js", "compiler.js", "builtinArray.js", "builtinBoolean.js", "builtinBuffer.js", "builtinDate.js", "builtinError.js", "builtinFunction.js", "builtinGlobal.js", "builtinJSON.js", "builtinMath.js", "builtinNumber.js", "builtinObject.js", "builtinRegExp.js", "builtinString.js", "conversion.js", "expression.js", "function.js", "statement.js", "program.js", "parser.js", "intrinsic.js", "execution.js", "types.js", "realm.js"];
+var filenames = ["helper.js", "type_constants.js", "import.js", "export.js", "misc.js", "snapshot.js", "unicode.js", "regexp_compiler.js", "compiler.js", "builtinArray.js", "builtinBoolean.js", "builtinBuffer.js", "builtinDate.js", "builtinError.js", "builtinFunction.js", "builtinGlobal.js", "builtinJSON.js", "builtinMath.js", "builtinNumber.js", "builtinObject.js", "builtinRegExp.js", "builtinString.js", "conversion.js", "expression.js", "function.js", "statement.js", "program.js", "parser.js", "intrinsic.js", "execution.js", "types.js", "realm.js"];
 
 var prefix = "_pershavm";
 var map = Object.create(null);
@@ -111,15 +111,15 @@ function VM() {
     var realm;
     var customFunctions = Object.create(null);
 
+    this.setCustomFunction = function(name, func) {
+        customFunctions[name] = func;
+    }
+
     this.initialize = function() {
         context.setCustomFunctions(null);
         context.setRealm(null);
         context.initializeRealm();
         realm = context.getRealm();
-    }
-
-    this.setCustomFunction = function(name, func) {
-        customFunctions[name] = func;
     }
 
     this.writeSnapshot = function(stream) {
@@ -136,9 +136,12 @@ function VM() {
     }
 
     this.evaluateProgram = function(text, filename) {
+        var ctx = context.saveEntireContext();
         context.setCustomFunctions(customFunctions);
         context.setRealm(realm);
-        return context.evaluateProgram(text, filename);
+        var result = context.evaluateProgram(text, filename);
+        context.restoreEntireContext(ctx);
+        return result;
     }
 
     this.callSystemHandler = function(name) {
@@ -147,10 +150,13 @@ function VM() {
     }
 
     this.applySystemHandler = function(name, args) {
+        var ctx = context.saveEntireContext();
         context.setCustomFunctions(customFunctions);
         context.setRealm(realm);
         var args = context.importArguments(args);
-        return context.applySystemHandler(name, args);
+        var result = context.applySystemHandler(name, args);
+        context.restoreEntireContext(ctx);
+        return result;
     }
 
 }

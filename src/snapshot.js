@@ -584,12 +584,28 @@ function Buffer_readObject(istream) {
 
 function OpaqueObject_writeObject(ostream) {
     intrinsic_writeObject(this, ostream);
-    this.naked;
-    var opaque = this.opaque;
-    //TODO serialize opaque
+    ostream.writeValue(this.wrapped);
+    var serializer = safe_get_primitive_value(this, "serializer");
+    ostream.writeValue(serializer);
+    var f = customFunctions[serializer];
+    if (f) {
+        var b = f.call(this.opaque, "serialize");
+        if (Buffer.isBuffer(b)) {
+            ostream.writeBuffer(b);
+            return;
+        }
+    }
+    ostream.writeBuffer(Buffer.alloc(0));
 }
 
 function OpaqueObject_readObject(istream) {
     intrinsic_readObject(this, istream);
-    //TODO deserialize opaque
+    this.wrapped = istream.readValue();
+    this.opaque = create_exported_object('Object');
+    var serializer = istream.readValue();
+    var b = istream.readBuffer();
+    var f = customFunctions[serializer];
+    if (f) {
+        f.call(this.opaque, "deserialize", b);
+    }
 }

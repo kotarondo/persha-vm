@@ -617,7 +617,7 @@ CompilerContext.prototype.compileEvaluateArguments = function(args) {
 };
 
 CompilerContext.prototype.compileRunningPos = function(pos) {
-    this.text("runningSourcePos= " + pos + ";"); // TODO delayed
+    this.text("runningSourcePos= " + pos + ";");
 };
 
 CompilerContext.prototype.openLabel = function(identifier) {

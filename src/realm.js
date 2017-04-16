@@ -31,8 +31,17 @@
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
 // ECMAScript 5.1: 15 Standard Built-in ECMAScript Objects
+
+var realm;
+
+function getRealm() {
+    return realm;
+}
+
+function setRealm(r) {
+    realm = r;
+}
 
 function initializeRealm() {
     realm = {
@@ -643,18 +652,3 @@ const realmTemplate = {
     LocalTZA: 1,
     LocalTZAString: 1,
 };
-
-var realm;
-var customFunctions;
-
-function getRealm() {
-    return realm;
-}
-
-function setRealm(r) {
-    realm = r;
-}
-
-function setCustomFunctions(cf) {
-    customFunctions = cf;
-}

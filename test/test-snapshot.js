@@ -24,6 +24,7 @@ stream.prototype.writeInt =
     }
 
 var vm1 = new VM()
+setupCustomFunction(vm1);
 vm1.initialize()
 vm1.evaluateProgram("x0=undefined")
 vm1.evaluateProgram("x1=null")
@@ -47,8 +48,32 @@ vm1.evaluateProgram("x18=new SyntaxError('abc4')", "filename4")
 vm1.evaluateProgram("x19=new URIError('abc5')", "filename5")
 vm1.evaluateProgram("x20=new EvalError('abc6')", "filename6")
 vm1.evaluateProgram("x21=[{a:1,b:{c:3}},,[,7],];x21.length=4;Object.freeze(x21);x21")
+vm1.evaluateProgram("x22=new OpaqueFunction('constructor', 'serializer')")
+vm1.evaluateProgram("x23=new x22('abc', 5)")
 vm1.evaluateProgram("setSystemHandler('test', function(){return 'abc'})")
 check(vm1)
+
+function setupCustomFunction(vm) {
+    vm.setCustomFunction('constructor', function(a, b) {
+        assert_equals(a, 'abc')
+        assert_equals(b, 5)
+        this.a = a
+        this.b = b
+    })
+    vm.setCustomFunction('serializer', function(type, b) {
+        if (type === 'serialize') {
+            assert_equals(JSON.stringify(this), '{"a":"abc","b":5}')
+            return new Buffer(JSON.stringify(this));
+        } else {
+            assert_equals(type, 'deserialize')
+            assert_equals(b.toString(), '{"a":"abc","b":5}')
+            var x = JSON.parse(b)
+            for (var i in x) {
+                this[i] = x[i]
+            }
+        }
+    })
+}
 
 function check(vm) {
     assert(typeof vm.evaluateProgram("x0") === 'undefined')
@@ -139,12 +164,14 @@ function check(vm) {
 var s = new stream()
 vm1.writeSnapshot(s)
 var vm2 = new VM()
+setupCustomFunction(vm2);
 vm2.readSnapshot(s)
 check(vm2)
 
 var s = new stream()
 vm2.writeSnapshot(s)
 var vm3 = new VM()
+setupCustomFunction(vm3);
 vm3.readSnapshot(s)
 check(vm3)
 

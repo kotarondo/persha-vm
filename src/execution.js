@@ -230,21 +230,18 @@ function getStackTrace() {
     if (Type(stackTraceLimit) !== TYPE_Number) {
         stackTraceLimit = 10;
     }
+    if (stackTraceLimit > stackDepth) {
+        stackTraceLimit = stackDepth;
+    }
     var stackTrace = [];
-    if (runningCode !== undefined) {
-        if (stackTrace.length >= stackTraceLimit) {
-            return stackTrace;
-        }
+    if (stackTrace.length < stackTraceLimit) {
         stackTrace.push({
             func: runningFunction,
             code: runningCode,
             pos: runningSourcePos,
         });
         var ctx = outerExecutionContext;
-        while (ctx.runningCode !== undefined) {
-            if (stackTrace.length >= stackTraceLimit) {
-                return stackTrace;
-            }
+        while (stackTrace.length < stackTraceLimit) {
             stackTrace.push({
                 func: ctx.runningFunction,
                 code: ctx.runningCode,

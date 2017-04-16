@@ -109,7 +109,7 @@ function Math_pow(thisValue, argumentsList) {
 }
 
 function Math_random(thisValue, argumentsList) {
-    return Math.random(); // TODO for deterministic behavior
+    return deterministicValue(Math.random(), "Math.random");
 }
 
 function Math_round(thisValue, argumentsList) {

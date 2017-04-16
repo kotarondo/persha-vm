@@ -31,6 +31,12 @@
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+var customFunctions;
+
+function setCustomFunctions(cf) {
+    customFunctions = cf;
+}
+
 function OpaqueFunction_Call(thisValue, argumentsList) {
     return OpaqueFunction_Construct(argumentsList);
 }
@@ -54,21 +60,17 @@ function OpaqueFunction_Construct(argumentsList) {
 function OpaqueFunction_ClassCall(thisValue, argumentsList) {
     var F = this;
     var name = ToString(F.Get("name"));
-    // non-deterministic hereafter
     var f = customFunctions[name];
-    if (!f) {
-        // TODO deterministic
-        return;
-    }
     var V = exportValue(thisValue);
     var args = exportArguments(argumentsList);
+    if (!f) {
+        return deterministicValue(undefined, "missingOpaqueCall", name, V, args);
+    }
     try {
         var result = f.apply(V, args);
     } catch (e) {
-        // TODO deterministic
         throw importValue(e);
     }
-    // TODO deterministic
     return importValue(result);
 }
 
@@ -87,4 +89,51 @@ function OpaqueFunction_ClassConstruct(argumentsList) {
     var result = F.Call(obj, argumentsList);
     if (typeof(result) === 'object' && result !== null) return result;
     return obj;
+}
+
+function saveEntireContext() {
+    return {
+        realm,
+        customFunctions,
+        LexicalEnvironment,
+        VariableEnvironment,
+        ThisBinding,
+        runningFunction,
+        runningCode,
+        runningSourcePos,
+        outerExecutionContext,
+        stackDepth,
+    };
+    realm = undefined;
+    customFunctions = undefined;
+    LexicalEnvironment = undefined;
+    VariableEnvironment = undefined;
+    ThisBinding = undefined;
+    runningFunction = undefined;
+    runningCode = undefined;
+    runningSourcePos = undefined;
+    stackDepth = 0;
+}
+
+function restoreEntireContext(ctx) {
+    realm = ctx.realm;
+    customFunctions = ctx.customFunctions;
+    LexicalEnvironment = ctx.LexicalEnvironment;
+    VariableEnvironment = ctx.VariableEnvironment;
+    ThisBinding = ctx.ThisBinding;
+    runningFunction = ctx.runningFunction;
+    runningCode = ctx.runningCode;
+    runningSourcePos = ctx.runningSourcePos;
+    stackDepth = ctx.stackDepth;
+}
+
+function deterministicValue(value) {
+    var handler = customFunctions.deterministicHandler;
+    if (!handler) return value;
+    try {
+        var result = handler.apply(null, arguments);
+    } catch (e) {
+        throw importValue(e);
+    }
+    return importValue(result);
 }
