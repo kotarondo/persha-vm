@@ -209,16 +209,22 @@ function saveExecutionContext() {
     }
     stackDepth++;
     outerExecutionContext = ({
-        runningFunction: runningFunction,
-        runningCode: runningCode,
-        runningSourcePos: runningSourcePos,
-        outerExecutionContext: outerExecutionContext,
+        LexicalEnvironment,
+        VariableEnvironment,
+        ThisBinding,
+        runningFunction,
+        runningCode,
+        runningSourcePos,
+        outerExecutionContext,
     });
 }
 
 function exitExecutionContext() {
     var ctx = outerExecutionContext;
     stackDepth--;
+    LexicalEnvironment = ctx.LexicalEnvironment;
+    VariableEnvironment = ctx.VariableEnvironment;
+    ThisBinding = ctx.ThisBinding;
     runningFunction = ctx.runningFunction;
     runningCode = ctx.runningCode;
     runningSourcePos = ctx.runningSourcePos;
