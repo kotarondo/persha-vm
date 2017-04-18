@@ -67,6 +67,38 @@ function Global_eval(thisValue, argumentsList, direct, strict, lexEnv, varEnv, t
     throw result.value;
 }
 
+function Global_evaluateProgram(thisValue, argumentsList) {
+    var x = ToString(argumentsList[0]);
+    var filename = ToString(argumentsList[1]);
+    try {
+        var prog = Parser.readCode("global", "", x, false, [], filename);
+    } catch (e) {
+        if (e instanceof theParser.SyntaxError) {
+            throw VMSyntaxError(e.message);
+        }
+        if (e instanceof theParser.ReferenceError) {
+            throw VMReferenceError(e.message);
+        }
+        throw e;
+    }
+    var savedLexicalEnvironment = LexicalEnvironment;
+    var savedVariableEnvironment = VariableEnvironment;
+    var savedThisBinding = ThisBinding;
+    enterExecutionContextForGlobalCode(prog);
+    try {
+        var result = prog.evaluate();
+    } finally {
+        exitExecutionContext();
+        LexicalEnvironment = savedLexicalEnvironment;
+        VariableEnvironment = savedVariableEnvironment;
+        ThisBinding = savedThisBinding;
+    }
+    if (result.type === "normal" && result.value === empty) return undefined;
+    if (result.type === "normal") return result.value;
+    assert(result.type === "throw", result);
+    throw result.value;
+}
+
 function Global_parseInt(thisValue, argumentsList) {
     var string = argumentsList[0];
     var radix = argumentsList[1];

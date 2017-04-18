@@ -223,6 +223,7 @@ function initializeRealm() {
     defineFinal(realm.theGlobalObject, "undefined", undefined);
     realm.theEvalFunction = //
         defineFunction(realm.theGlobalObject, "eval", 1, Global_eval);
+    defineFunction(realm.theGlobalObject, "evaluateProgram", 1, Global_evaluateProgram);
     defineFunction(realm.theGlobalObject, "parseInt", 2, Global_parseInt);
     defineFunction(realm.theGlobalObject, "parseFloat", 1, Global_parseFloat);
     defineFunction(realm.theGlobalObject, "isNaN", 1, Global_isNaN);

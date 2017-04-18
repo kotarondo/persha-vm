@@ -63,6 +63,7 @@ const intrinsicFunctions = {
     "URIError.Call": URIError_Call,
     "URIError.Construct": URIError_Construct,
     "Global.eval": Global_eval,
+    "Global.evaluateProgram": Global_evaluateProgram,
     "Global.parseInt": Global_parseInt,
     "Global.parseFloat": Global_parseFloat,
     "Global.isNaN": Global_isNaN,

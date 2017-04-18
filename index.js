@@ -139,7 +139,7 @@ function VM() {
         var ctx = context.saveEntireContext();
         context.setCustomFunctions(customFunctions);
         context.setRealm(realm);
-        var result = context.evaluateProgram(text, filename);
+        var result = context.callEvaluateProgram(text, filename);
         context.restoreEntireContext(ctx);
         return result;
     }
