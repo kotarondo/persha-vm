@@ -45,12 +45,13 @@ function classof_importing_object(a) {
             return 'RegExp';
         case '[object Error]':
             return 'Error';
-        case '[object Function]':
-            return 'Function';
         case '[object Array]':
             return 'Array';
+        case '[object Function]':
+            return 'Function';
     }
     if (Buffer.isBuffer(a)) return 'Buffer';
+    return 'Object';
 }
 
 function create_imported_object(type, arg1, arg2) {
@@ -152,8 +153,7 @@ function importValue(a, index) {
             var A = create_imported_object('Error', name, message);
             break;
         case 'Function':
-            var A = undefined;
-            break;
+            return null;
         case 'Array':
             var A = create_imported_object('Array');
             var dump_contents = true;

@@ -250,17 +250,17 @@ function get_Error_prototype_stack(thisValue, argumentsList) {
     if (Type(thisValue) !== TYPE_Object || thisValue.Class !== "Error") throw VMTypeError();
     var stackTrace = thisValue.stackTrace;
     var A = [];
-    var info = {};
     A[0] = Error_prototype_toString(thisValue, []);
     for (var i = 0; i < stackTrace.length; i++) {
         var code = stackTrace[i].code;
         var pos = stackTrace[i].pos;
+        var info = {};
         Parser.locateDebugInfo(code, pos, info);
         var finfo = info.filename + ":" + info.lineNumber + ":" + info.columnNumber;
-        A[i + 1] = finfo;
         if (info.functionName) {
-            A[i + 1] = info.functionName + " (" + finfo + ")";
+            finfo = info.functionName + " (" + finfo + ")";
         }
+        A[i + 1] = finfo;
     }
     return A.join("\n    at ");
 }
@@ -271,10 +271,10 @@ function Error_prototype_getStackTraceEntry(thisValue, argumentsList) {
     if (stackTrace[index] === undefined) {
         return undefined;
     }
-    var info = {};
     var func = stackTrace[index].func;
     var code = stackTrace[index].code;
     var pos = stackTrace[index].pos;
+    var info = {};
     Parser.locateDebugInfo(code, pos, info);
     var obj = Object_Construct([]);
     obj.Put("functionObject", func);

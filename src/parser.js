@@ -1624,19 +1624,36 @@ const Parser = (function() {
     }
 
     function convertToLineColumn(source, pos, info) {
+        var length = source.length;
         var lineNumber = 1;
         var lineHeadPos = 0;
         var i = 0;
-        while (i < pos) {
-            var c = source[i++];
-            if (!isLineTerminator(c)) {
-                continue;
-            }
+        while (true) {
+            do {
+                var c = source[i++];
+            } while (!isLineTerminator(c) && i < length);
             if (c === '\r' && source[i] === '\n') {
                 i++;
             }
+            if (pos < i) {
+                break;
+            }
             lineNumber++;
+            if (source.substring(lineHeadPos, lineHeadPos + 8) === "//#line ") {
+                var d = source.substring(lineHeadPos + 8, i);
+                var no = parseInt(d);
+                if (0 <= no && no < Infinity) {
+                    lineNumber = no;
+                    var m = /"(.*)"/.exec(d);
+                    if (m) {
+                        info.filename = m[1];
+                    }
+                }
+            }
             lineHeadPos = i;
+            if (pos === i) {
+                break;
+            }
         }
         info.lineNumber = lineNumber;
         info.columnNumber = pos - lineHeadPos + 1;
@@ -1645,12 +1662,11 @@ const Parser = (function() {
     function locateDebugInfo(code, pos, info) {
         var sourceObject = code.sourceObject;
         var source = sourceObject.source;
-        convertToLineColumn(source, pos, info);
         info.filename = sourceObject.filename;
-        info.functionName = undefined;
         if (code.type === "function") {
             info.functionName = code.functionName;
         }
+        convertToLineColumn(source, pos, info);
     }
 
     function SyntaxError(pos) {
@@ -1660,22 +1676,22 @@ const Parser = (function() {
         if (pos === undefined) {
             pos = currentPos;
         }
+        var info = { filename: sourceObject.filename };
+        convertToLineColumn(source, pos, info);
         if (pos >= source.length) {
-            this.message = "Unexpected end of input: " + sourceObject.filename;
+            this.message = "Unexpected end of input: " + info.filename;
             return;
         }
-        var info = {};
-        convertToLineColumn(source, pos, info);
-        this.message = sourceObject.filename + ":" + info.lineNumber + ":" + info.columnNumber;
+        this.message = info.filename + ":" + info.lineNumber + ":" + info.columnNumber;
     }
 
     function ReferenceError(pos) {
         if (!(this instanceof ReferenceError)) {
             return new ReferenceError(pos);
         }
-        var info = {};
+        var info = { filename: sourceObject.filename };
         convertToLineColumn(source, pos, info);
-        this.message = sourceObject.filename + ":" + info.lineNumber + ":" + info.columnNumber;
+        this.message = info.filename + ":" + info.lineNumber + ":" + info.columnNumber;
     }
 
 })();

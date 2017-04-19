@@ -163,6 +163,8 @@ function exportValue(A) {
             return exportRegExp(A);
         case 'Error':
             return exportError(A);
+        case 'Function':
+            return null;
         case 'Array':
             var obj = create_exported_object('Array');
             A.exported = new Proxy(obj, new ExportHandler(A));
@@ -215,10 +217,10 @@ function exportError(A) {
     if (name === "") A[0] = msg;
     else if (msg === "") A[0] = name;
     else A[0] = name + ": " + msg;
-    var info = {};
     for (var i = 0; i < stackTrace.length; i++) {
         var code = stackTrace[i].code;
         var pos = stackTrace[i].pos;
+        var info = {};
         Parser.locateDebugInfo(code, pos, info);
         var finfo = info.filename + ":" + info.lineNumber + ":" + info.columnNumber;
         A[i + 1] = finfo;

@@ -20,6 +20,9 @@ while (filenames.length) {
         var value = vm.evaluateProgram(source, filename)
         if (value && value[2] === "DONE" && JSON.stringify(value[0]) === JSON.stringify(value[1])) {
             succ++;
+        } else {
+            console.log(value)
+            fail++;
         }
     } catch (err) {
         console.log(err)
@@ -27,5 +30,4 @@ while (filenames.length) {
     }
 }
 
-assert(!fail)
-test_success()
+if (!fail) test_success()

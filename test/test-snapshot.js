@@ -50,7 +50,7 @@ vm1.evaluateProgram("x20=new EvalError('abc6')", "filename6")
 vm1.evaluateProgram("x21=[{a:1,b:{c:3}},,[,7],];x21.length=4;Object.freeze(x21);x21")
 vm1.evaluateProgram("x22=new OpaqueFunction('constructor', 'serializer')")
 vm1.evaluateProgram("x23=new x22('abc', 5)")
-vm1.evaluateProgram("setSystemHandler('test', function(){return 'abc'})")
+vm1.evaluateProgram("setSystemHandler('test', x24=function(){return 'abc'})")
 check(vm1)
 
 function setupCustomFunction(vm) {
@@ -90,7 +90,7 @@ function check(vm) {
     assert(vm.evaluateProgram("x11") instanceof Buffer)
     assert(typeof vm.evaluateProgram("x12")[0] === 'boolean')
     assert(typeof vm.evaluateProgram("x12")[1] === 'boolean')
-    assert(vm.evaluateProgram("x13") instanceof Function)
+    assert(vm.evaluateProgram("x13") === null)
     assert(vm.evaluateProgram("x14") instanceof Error)
     assert(vm.evaluateProgram("x15") instanceof TypeError)
     assert(vm.evaluateProgram("x16") instanceof ReferenceError)
@@ -98,7 +98,7 @@ function check(vm) {
     assert(vm.evaluateProgram("x18") instanceof SyntaxError)
     assert(vm.evaluateProgram("x19") instanceof URIError)
     assert(vm.evaluateProgram("x20") instanceof EvalError)
-    assert(vm.evaluateProgram("getSystemHandler('test')") instanceof Function)
+    assert(vm.evaluateProgram("getSystemHandler('test') === x24"))
 
     assert(vm.evaluateProgram("x0") === vm.evaluateProgram("x0"))
     assert(vm.evaluateProgram("x1") === vm.evaluateProgram("x1"))
@@ -109,7 +109,6 @@ function check(vm) {
     assert(vm.evaluateProgram("x12") === vm.evaluateProgram("x12"))
     assert(vm.evaluateProgram("x13") === vm.evaluateProgram("x13"))
     assert(vm.evaluateProgram("x21") === vm.evaluateProgram("x21"))
-    assert(vm.evaluateProgram("getSystemHandler('test')") === vm.evaluateProgram("getSystemHandler('test')"))
 
     assert_equals(vm.evaluateProgram("x0"), undefined)
     assert_equals(vm.evaluateProgram("x1"), null)
@@ -132,15 +131,6 @@ function check(vm) {
     assert_equals(vm.evaluateProgram("x18").toString(), 'SyntaxError: abc4')
     assert_equals(vm.evaluateProgram("x19").toString(), 'URIError: abc5')
     assert_equals(vm.evaluateProgram("x20").toString(), 'EvalError: abc6')
-
-    assert_equals(vm.evaluateProgram("x13").length, 3)
-    try {
-        vm.evaluateProgram("x13")()
-        var err = null
-    } catch (e) {
-        var err = e
-    }
-    assert(err instanceof TypeError, err)
 
     assert_equals(vm.evaluateProgram("x14").stack, 'Error: abc\n    at filename:1:1')
     assert_equals(vm.evaluateProgram("x15").stack, 'TypeError: abc1\n    at filename1:1:1')

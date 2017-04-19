@@ -88,7 +88,7 @@ function test() {
         configurable: true,
     })
     Object.defineProperty(proto, "F", {
-        get: function() { return "F" },
+        get: function test_name() { return "F" },
         enumerable: true,
         configurable: true,
     })
@@ -101,5 +101,12 @@ assert_equals(Object.keys(result).toString(), 'A,C')
 var x = []
 for (var P in result) x.push(P, result[P])
 assert_equals(x.toString(), 'A,A,C,,D,D,F,')
+
+var f1 = vm.evaluateProgram("f1=function(){}")
+var f2 = vm.evaluateProgram("f2=function abc(a,b,c){return a+b+c}")
+var f3 = vm.evaluateProgram("function xyz(a,b,c){return a+b+c}; xyz")
+assert_equals(f1, null)
+assert_equals(f2, null)
+assert_equals(f3, null)
 
 test_success()
