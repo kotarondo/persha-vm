@@ -78,8 +78,6 @@ function create_exported_object(Class, arg1, arg2) {
             return Object.prototype;
         case 'ArrayPrototype':
             return Array.prototype;
-        case 'FunctionPrototype':
-            return Function.prototype;
         case 'StringPrototype':
             return String.prototype;
         case 'BooleanPrototype':
@@ -120,7 +118,6 @@ function create_exported_object(Class, arg1, arg2) {
 function initializeDefaultExport() {
     realm.Object_prototype.exported = create_exported_object('ObjectPrototype');
     realm.Array_prototype.exported = create_exported_object('ArrayPrototype');
-    realm.Function_prototype.exported = create_exported_object('FunctionPrototype');
     realm.String_prototype.exported = create_exported_object('StringPrototype');
     realm.Boolean_prototype.exported = create_exported_object('BooleanPrototype');
     realm.Number_prototype.exported = create_exported_object('NumberPrototype');
