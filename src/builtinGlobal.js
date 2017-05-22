@@ -67,10 +67,10 @@ function Global_evaluateProgram(thisValue, argumentsList) {
     try {
         var prog = Parser.readCode("global", "", x, false, [], filename);
     } catch (e) {
-        if (e instanceof theParser.SyntaxError) {
+        if (e instanceof Parser.SyntaxError) {
             throw VMSyntaxError(e.message);
         }
-        if (e instanceof theParser.ReferenceError) {
+        if (e instanceof Parser.ReferenceError) {
             throw VMReferenceError(e.message);
         }
         throw e;
