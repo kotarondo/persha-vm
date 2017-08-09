@@ -251,7 +251,6 @@ function initializeRealm() {
     define(realm.theGlobalObject, "TypeError", realm.TypeError);
     define(realm.theGlobalObject, "URIError", realm.URIError);
     define(realm.theGlobalObject, "JSON", realm.JSON);
-    defineFinal(realm.theGlobalObject, "global", realm.theGlobalObject);
     defineFunction(realm.theGlobalObject, "setSystemProperty", 2, Global_setSystemProperty);
     defineFunction(realm.theGlobalObject, "getSystemProperty", 1, Global_getSystemProperty);
     defineFunction(realm.theGlobalObject, "setSystemHandler", 2, Global_setSystemHandler);

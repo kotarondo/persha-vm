@@ -1,6 +1,6 @@
 {
     "name": "persha-vm",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "Deterministic JavaScript Virtual Machine",
     "author": "Kotaro Endo <kotarondo@gmail.com>",
     "license": "BSD-3-Clause",
