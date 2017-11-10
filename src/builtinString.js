@@ -143,7 +143,7 @@ function String_prototype_localeCompare(thisValue, argumentsList) {
     CheckObjectCoercible(thisValue);
     var S = ToString(thisValue);
     var That = ToString(that);
-    return S.localeCompare(That);
+    return deterministicValue(S.localeCompare(That), "String.prototype.localeCompare", S, That);
 }
 
 function String_prototype_match(thisValue, argumentsList) {
@@ -446,25 +446,25 @@ function String_prototype_substring(thisValue, argumentsList) {
 function String_prototype_toLowerCase(thisValue, argumentsList) {
     CheckObjectCoercible(thisValue);
     var S = ToString(thisValue);
-    return S.toLowerCase();
+    return deterministicValue(S.toLowerCase(), "String.prototype.toLowerCase", S);
 }
 
 function String_prototype_toLocaleLowerCase(thisValue, argumentsList) {
     CheckObjectCoercible(thisValue);
     var S = ToString(thisValue);
-    return S.toLocaleLowerCase();
+    return deterministicValue(S.toLocaleLowerCase(), "String.prototype.toLocaleLowerCase", S);
 }
 
 function String_prototype_toUpperCase(thisValue, argumentsList) {
     CheckObjectCoercible(thisValue);
     var S = ToString(thisValue);
-    return S.toUpperCase();
+    return deterministicValue(S.toUpperCase(), "String.prototype.toUpperCase", S);
 }
 
 function String_prototype_toLocaleUpperCase(thisValue, argumentsList) {
     CheckObjectCoercible(thisValue);
     var S = ToString(thisValue);
-    return S.toLocaleUpperCase();
+    return deterministicValue(S.toLocaleUpperCase(), "String.prototype.toLocaleUpperCase", S);
 }
 
 function String_prototype_trim(thisValue, argumentsList) {
