@@ -205,8 +205,7 @@ function Object_keys(thisValue, argumentsList) {
     var O = argumentsList[0];
     if (Type(O) !== TYPE_Object) throw VMTypeError();
     var next = O.enumerator(true, true);
-    var n = next.length;
-    var array = Array_Construct([n]);
+    var array = Array_Construct([]);
     var index = 0;
     var P;
     while ((P = next()) !== undefined) {

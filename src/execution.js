@@ -509,7 +509,7 @@ function Global_FastGetBindingValue(N, S) {
             if (S === false) return undefined;
             throw VMReferenceError(N);
         }
-        var desc = proto.GetProperty(P);
+        var desc = proto.GetProperty(N);
         if (desc === undefined) {
             if (S === false) return undefined;
             throw VMReferenceError(N);
