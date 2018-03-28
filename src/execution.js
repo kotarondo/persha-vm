@@ -202,12 +202,29 @@ var runningCode;
 var runningSourcePos;
 var outerExecutionContext;
 var stackDepth = 0;
+var stepsRemained = NaN;
+
+function ErrorCapsule(error) {
+    this.error = error;
+}
+
+function setRunningPos(pos) {
+    if (0 <= pos) runningSourcePos = pos;
+    if (stepsRemained < 0) {
+        throw new ErrorCapsule(VMRangeError("steps overflow"));
+    }
+    stepsRemained -= 100;
+}
+
+function setRunningPosCompiled(pos) {
+    if (0 <= pos) runningSourcePos = pos;
+    if (stepsRemained < 0) {
+        throw new ErrorCapsule(VMRangeError("steps overflow"));
+    }
+    stepsRemained -= 1;
+}
 
 function saveExecutionContext() {
-    if (stackDepth >= realm.stackDepthLimit) {
-        throw VMRangeError("stack overflow");
-    }
-    stackDepth++;
     outerExecutionContext = ({
         LexicalEnvironment,
         VariableEnvironment,
@@ -216,12 +233,16 @@ function saveExecutionContext() {
         runningCode,
         runningSourcePos,
         outerExecutionContext,
+        stackDepth,
     });
+    if (stackDepth >= realm.stackDepthLimit) {
+        throw VMRangeError("stack overflow");
+    }
+    stackDepth++;
 }
 
 function exitExecutionContext() {
     var ctx = outerExecutionContext;
-    stackDepth--;
     LexicalEnvironment = ctx.LexicalEnvironment;
     VariableEnvironment = ctx.VariableEnvironment;
     ThisBinding = ctx.ThisBinding;
@@ -229,6 +250,7 @@ function exitExecutionContext() {
     runningCode = ctx.runningCode;
     runningSourcePos = ctx.runningSourcePos;
     outerExecutionContext = ctx.outerExecutionContext;
+    stackDepth = ctx.stackDepth;
 }
 
 function getStackTrace() {
@@ -241,18 +263,22 @@ function getStackTrace() {
     }
     var stackTrace = [];
     if (stackTrace.length < stackTraceLimit) {
-        stackTrace.push({
-            func: runningFunction,
-            code: runningCode,
-            pos: runningSourcePos,
-        });
-        var ctx = outerExecutionContext;
-        while (stackTrace.length < stackTraceLimit) {
+        if (runningCode) {
             stackTrace.push({
-                func: ctx.runningFunction,
-                code: ctx.runningCode,
-                pos: ctx.runningSourcePos,
+                func: runningFunction,
+                code: runningCode,
+                pos: runningSourcePos,
             });
+        }
+        var ctx = outerExecutionContext;
+        while (ctx && stackTrace.length < stackTraceLimit) {
+            if (ctx.runningCode) {
+                stackTrace.push({
+                    func: ctx.runningFunction,
+                    code: ctx.runningCode,
+                    pos: ctx.runningSourcePos,
+                });
+            }
             var ctx = ctx.outerExecutionContext;
         }
     }
@@ -522,6 +548,7 @@ function Global_FastGetBindingValue(N, S) {
         if (getter === undefined) {
             return undefined;
         }
+        setRunningPos();
         return getter.Call(binding, []);
     }
 }

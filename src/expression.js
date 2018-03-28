@@ -202,6 +202,7 @@ function NewOperator(expression, args) {
         }
         cntr = ctx.unify(cntr);
         ctx.text("if(! " + cntr.name + " ||! " + cntr.name + " .Construct)throwNotAFunctionError(" + cntr.name + ");");
+        ctx.text("setRunningPos();");
         var mval = ctx.defineValue(cntr.name + " .Construct(" + argList.name + ")");
         return mval;
     });
@@ -234,6 +235,7 @@ function FunctionCall(expression, args, strict) {
             assert(ref.types.isValue(), ref); // provided that all expressions have own compilers
             var thisValue = COMPILER_UNDEFINED_VALUE;
         }
+        ctx.text("setRunningPos();");
         if (ref.name === '"eval"' && ref.types === COMPILER_IDENTIFIER_REFERENCE_TYPE) {
             ctx.text("if(" + func.name + " ===realm.theEvalFunction)");
             var mval = ctx.defineValue("Global_eval(" + thisValue.name + "," + argList.name + ",true," + strict +

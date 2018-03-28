@@ -102,21 +102,21 @@ function delayedFunctionBody(F, ThisBinding, argumentsList) {
 
 function Function_ClassCall(thisValue, argumentsList) {
     var F = this;
-    saveExecutionContext();
-    var code = F.Code;
-    if (code.strict) {
-        var ThisBinding = thisValue;
-    } else if (thisValue === null || thisValue === undefined) {
-        var ThisBinding = realm.theGlobalObject;
-    } else if (typeof(thisValue) !== 'object') {
-        var ThisBinding = ToObject(thisValue);
-    } else {
-        var ThisBinding = thisValue;
-    }
-    runningFunction = F;
-    runningCode = code;
-    runningSourcePos = 0;
     try {
+        saveExecutionContext();
+        var code = F.Code;
+        if (code.strict) {
+            var ThisBinding = thisValue;
+        } else if (thisValue === null || thisValue === undefined) {
+            var ThisBinding = realm.theGlobalObject;
+        } else if (typeof(thisValue) !== 'object') {
+            var ThisBinding = ToObject(thisValue);
+        } else {
+            var ThisBinding = thisValue;
+        }
+        runningFunction = F;
+        runningCode = code;
+        setRunningPos(0);
         return F.Code.evaluate(F, ThisBinding, argumentsList);
     } finally {
         exitExecutionContext();
@@ -133,6 +133,7 @@ function Function_ClassConstruct(argumentsList) {
     } else {
         obj.Prototype = realm.Object_prototype;
     }
+    setRunningPos();
     var result = F.Call(obj, argumentsList);
     if (typeof(result) === 'object' && result !== null) return result;
     return obj;

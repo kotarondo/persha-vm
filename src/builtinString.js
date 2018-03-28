@@ -238,6 +238,7 @@ function String_prototype_replace(thisValue, argumentsList) {
     function convertingReplaceValue(indx, args) {
         var m = args.length - 1;
         if (Type(replaceValue) === TYPE_Object && replaceValue.Class === "Function") {
+            setRunningPos();
             var newstring = replaceValue.Call(undefined, args.concat(indx, string));
         } else {
             var newstring = ToString(replaceValue);

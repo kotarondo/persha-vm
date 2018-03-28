@@ -49,8 +49,8 @@ function Global_eval(thisValue, argumentsList, direct, strict, lexEnv, varEnv, t
         }
         throw e;
     }
-    enterExecutionContextForEvalCode(prog, direct, lexEnv, varEnv, thisB);
     try {
+        enterExecutionContextForEvalCode(prog, direct, lexEnv, varEnv, thisB);
         var result = prog.evaluate();
     } finally {
         exitExecutionContext();
@@ -75,8 +75,8 @@ function Global_evaluateProgram(thisValue, argumentsList) {
         }
         throw e;
     }
-    enterExecutionContextForGlobalCode(prog);
     try {
+        enterExecutionContextForGlobalCode(prog);
         var result = prog.evaluate();
     } finally {
         exitExecutionContext();
@@ -367,6 +367,14 @@ function Global_setSystemProperty(thisValue, argumentsList) {
     }
     if (name === "LocalTZAString") {
         realm.LocalTZAString = ToString(value);
+    }
+    if (name === "stepsLimit") {
+        var s = ToInteger(value);
+        if (s > 0) {
+            stepsRemained = s;
+        } else {
+            stepsRemained = NaN;
+        }
     }
 }
 

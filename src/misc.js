@@ -33,10 +33,6 @@
 
 var customFunctions;
 
-function setCustomFunctions(cf) {
-    customFunctions = cf;
-}
-
 function OpaqueFunction_Call(thisValue, argumentsList) {
     return OpaqueFunction_Construct(argumentsList);
 }
@@ -86,45 +82,28 @@ function OpaqueFunction_ClassConstruct(argumentsList) {
     } else {
         obj.Prototype = realm.Object_prototype;
     }
+    setRunningPos();
     var result = F.Call(obj, argumentsList);
     if (typeof(result) === 'object' && result !== null) return result;
     return obj;
 }
 
-function saveEntireContext() {
-    return {
+function enterRealm(r, cf) {
+    var ctx = {
         realm,
         customFunctions,
-        LexicalEnvironment,
-        VariableEnvironment,
-        ThisBinding,
-        runningFunction,
-        runningCode,
-        runningSourcePos,
-        outerExecutionContext,
-        stackDepth,
+        stepsRemained,
     };
-    realm = undefined;
-    customFunctions = undefined;
-    LexicalEnvironment = undefined;
-    VariableEnvironment = undefined;
-    ThisBinding = undefined;
-    runningFunction = undefined;
-    runningCode = undefined;
-    runningSourcePos = undefined;
-    stackDepth = 0;
+    realm = r;
+    customFunctions = cf;
+    stepsRemained = NaN;
+    return ctx;
 }
 
-function restoreEntireContext(ctx) {
+function restoreRealm(ctx) {
     realm = ctx.realm;
     customFunctions = ctx.customFunctions;
-    LexicalEnvironment = ctx.LexicalEnvironment;
-    VariableEnvironment = ctx.VariableEnvironment;
-    ThisBinding = ctx.ThisBinding;
-    runningFunction = ctx.runningFunction;
-    runningCode = ctx.runningCode;
-    runningSourcePos = ctx.runningSourcePos;
-    stackDepth = ctx.stackDepth;
+    stepsRemained = ctx.stepsRemained;
 }
 
 function deterministicValue(value) {
@@ -152,9 +131,13 @@ function callEvaluateProgram(text, filename) {
         }
         throw e;
     }
-    enterExecutionContextForGlobalCode(prog);
     try {
+        enterExecutionContextForGlobalCode(prog);
         var result = prog.evaluate();
+    } catch (e) {
+        if (e instanceof ErrorCapsule) e = e.error;
+        if (isInternalError(e)) throw e;
+        throw exportValue(e);
     } finally {
         exitExecutionContext();
     }
@@ -169,10 +152,20 @@ function applySystemHandler(name, argumentsList) {
     var F = realm.systemHandlers[name];
     if (IsCallable(F) === false) return;
     try {
+        saveExecutionContext();
+        LexicalEnvironment = realm.theGlobalEnvironment;
+        VariableEnvironment = realm.theGlobalEnvironment;
+        ThisBinding = realm.theGlobalObject;
+        runningFunction = undefined;
+        runningCode = undefined;
+        setRunningPos(0);
         var result = F.Call(null, argumentsList);
     } catch (e) {
+        if (e instanceof ErrorCapsule) e = e.error;
         if (isInternalError(e)) throw e;
         throw exportValue(e);
+    } finally {
+        exitExecutionContext();
     }
     return exportValue(result);
 }

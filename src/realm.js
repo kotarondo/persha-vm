@@ -39,10 +39,6 @@ function getRealm() {
     return realm;
 }
 
-function setRealm(r) {
-    realm = r;
-}
-
 function initializeRealm() {
     realm = {
         systemHandlers: Object.create(null),

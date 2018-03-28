@@ -296,6 +296,7 @@ function JSON_parse(thisValue, argumentsList) {
                 }
             }
         }
+        setRunningPos();
         return reviver.Call(holder, [name, val]);
     }
 }
@@ -367,10 +368,12 @@ function JSON_stringify(thisValue, argumentsList) {
         if (Type(value) === TYPE_Object) {
             var toJSON = value.Get("toJSON");
             if (IsCallable(toJSON) === true) {
+                setRunningPos();
                 var value = toJSON.Call(value, [key]);
             }
         }
         if (ReplacerFunction !== undefined) {
+            setRunningPos();
             var value = ReplacerFunction.Call(holder, [key, value]);
         }
         if (Type(value) === TYPE_Object) {

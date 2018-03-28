@@ -116,32 +116,41 @@ function VM() {
     }
 
     this.initialize = function() {
-        context.setCustomFunctions(null);
-        context.setRealm(null);
-        context.initializeRealm();
-        realm = context.getRealm();
+        var outer = context.enterRealm(null, null);
+        try{
+            context.initializeRealm();
+            realm = context.getRealm();
+        }finally{
+            context.restoreRealm(outer);
+        }
     }
 
     this.writeSnapshot = function(stream) {
-        context.setCustomFunctions(customFunctions);
-        context.setRealm(realm);
-        context.writeSnapshot(stream);
+        var outer = context.enterRealm(realm, customFunctions);
+        try{
+            context.writeSnapshot(stream);
+        }finally{
+            context.restoreRealm(outer);
+        }
     }
 
     this.readSnapshot = function(stream) {
-        context.setCustomFunctions(customFunctions);
-        context.setRealm(null);
-        context.readSnapshot(stream);
-        realm = context.getRealm();
+        var outer = context.enterRealm(null, customFunctions);
+        try{
+            context.readSnapshot(stream);
+            realm = context.getRealm();
+        }finally{
+            context.restoreRealm(outer);
+        }
     }
 
     this.evaluateProgram = function(text, filename) {
-        var ctx = context.saveEntireContext();
-        context.setCustomFunctions(customFunctions);
-        context.setRealm(realm);
-        var result = context.callEvaluateProgram(text, filename);
-        context.restoreEntireContext(ctx);
-        return result;
+        var outer = context.enterRealm(realm, customFunctions);
+        try{
+            return context.callEvaluateProgram(text, filename);
+        }finally{
+            context.restoreRealm(outer);
+        }
     }
 
     this.callSystemHandler = function(name) {
@@ -150,13 +159,13 @@ function VM() {
     }
 
     this.applySystemHandler = function(name, args) {
-        var ctx = context.saveEntireContext();
-        context.setCustomFunctions(customFunctions);
-        context.setRealm(realm);
-        var args = context.importArguments(args);
-        var result = context.applySystemHandler(name, args);
-        context.restoreEntireContext(ctx);
-        return result;
+        var outer = context.enterRealm(realm, customFunctions);
+        try{
+            var args = context.importArguments(args);
+            return context.applySystemHandler(name, args);
+        }finally{
+            context.restoreRealm(outer);
+        }
     }
 
 }

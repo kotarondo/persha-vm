@@ -109,7 +109,10 @@ function Function_prototype_apply(thisValue, argumentsList) {
     var thisArg = argumentsList[0];
     var argArray = argumentsList[1];
     if (IsCallable(func) === false) throw VMTypeError();
-    if (argArray === null || argArray === undefined) return func.Call(thisArg, []);
+    if (argArray === null || argArray === undefined) {
+        setRunningPos();
+        return func.Call(thisArg, []);
+    }
     if (typeof(argArray) !== 'object') throw VMTypeError();
     var len = argArray.Get("length");
     if (typeof(len) === "number") {
@@ -124,6 +127,7 @@ function Function_prototype_apply(thisValue, argumentsList) {
         argList.push(nextArg);
         index = index + 1;
     }
+    setRunningPos();
     return func.Call(thisArg, argList);
 }
 
@@ -137,6 +141,7 @@ function Function_prototype_call(thisValue, argumentsList) {
             argList.push(argumentsList[i]);
         }
     }
+    setRunningPos();
     return func.Call(thisArg, argList);
 }
 
@@ -173,6 +178,7 @@ function BindFunction_ClassCall(thisValue, argumentsList) {
     var boundThis = F.BoundThis;
     var target = F.TargetFunction;
     var args = boundArgs.concat(ExtraArgs);
+    setRunningPos();
     return target.Call(boundThis, args);
 }
 
@@ -183,6 +189,7 @@ function BindFunction_ClassConstruct(argumentsList) {
     if (target.Construct === undefined) throw VMTypeError();
     var boundArgs = F.BoundArgs;
     var args = boundArgs.concat(ExtraArgs);
+    setRunningPos();
     return target.Construct(args);
 }
 
