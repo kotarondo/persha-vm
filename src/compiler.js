@@ -153,12 +153,12 @@ function CompilerContext(params) {
     this.iterables = 0;
     this.switches = 0;
     this.labels = [];
+    this.lastCheckpoint = -10; // initial overhead
 }
 
 CompilerContext.prototype.compileExpression = function(expr) {
     assert(expr.compile, expr.toString()); // check if all expressions have own compilers
     if (expr.compile) {
-        this.text("--stepsRemained;");
         return expr.compile(this);
     }
     // compiler doesn't exist (under development)
@@ -169,7 +169,6 @@ CompilerContext.prototype.compileExpression = function(expr) {
 CompilerContext.prototype.compileStatement = function(stmt) {
     assert(stmt.compile, stmt.toString()); // check if all statements have own compilers
     if (stmt.compile) {
-        this.text("--stepsRemained;");
         stmt.compile(this);
         return;
     }
@@ -211,6 +210,7 @@ CompilerContext.reference = function(compile) {
         if (!delayed) {
             var ctx = new CompilerContext();
             var ref = compile(ctx);
+            ctx.stepsCheckpoint();
             ctx.text("return ReferenceValue(" + ref.base.name + "," + ref.name + "," + ref.strict + ");");
             delayed = ctx.finish();
         }
@@ -376,6 +376,7 @@ CompilerContext.prototype.finish = function() {
 };
 
 CompilerContext.prototype.compileReturn = function(val) {
+    this.stepsCheckpoint();
     this.text("return " + val.name + ";");
 }
 
@@ -425,7 +426,7 @@ CompilerContext.prototype.compileCreateMutableBinding = function(staticEnv, name
 
 CompilerContext.prototype.compileSetMutableBinding = function(staticEnv, name, val, strict) {
     if (isIncluded(name, staticEnv.locals)) {
-        this.text(staticEnv.bindings[name] + " = " + val.name);
+        this.text(staticEnv.bindings[name] + " = " + val.name + ";");
     } else {
         assert(isIncluded(name, staticEnv.defs));
         this.text("LexicalEnvironment.SetMutableBinding(" + this.quote(name) + "," + val.name + "," + strict + ");");
@@ -533,7 +534,10 @@ CompilerContext.prototype.compileGetValue = function(ref) {
             return this.defineValue("Global_FastGetBindingValue(" + ref.name + ")");
         }
         if (!base.types.isNotUndefined()) {
-            this.text("if(" + base.name + " ===undefined)throw VMReferenceError(" + ref.name + " +' is not defined');");
+            this.text("if(" + base.name + " ===undefined){");
+            this.stepsCheckpoint('cond');
+            this.text("throw VMReferenceError(" + ref.name + " +' is not defined');");
+            this.text("}");
         }
         return this.defineValue(base.name + " .GetBindingValue(" + ref.name + "," + ref.strict + ")");
     } else if (ref.types === COMPILER_LOCAL_REFERENCE_TYPE) {
@@ -568,10 +572,16 @@ CompilerContext.prototype.compilePutValue = function(ref, val) {
             return;
         }
         if (!base.types.isNotUndefined()) {
-            this.text("if(" + base.name + " ===undefined)");
-            if (ref.strict) this.text("throw VMReferenceError(" + ref.name + " +' is not defined');");
-            else this.text("realm.theGlobalObject.Put(" + ref.name + "," + val.name + ",false);");
-            this.text("else");
+            if (ref.strict) {
+                this.text("if(" + base.name + " ===undefined){");
+                this.stepsCheckpoint('cond');
+                this.text("throw VMReferenceError(" + ref.name + " +' is not defined');");
+                this.text("}else");
+            } else {
+                this.text("if(" + base.name + " ===undefined)");
+                this.text("realm.theGlobalObject.Put(" + ref.name + "," + val.name + ",false);");
+                this.text("else");
+            }
         }
         this.text(base.name + " .SetMutableBinding(" + ref.name + "," + val.name + "," + ref.strict + ");");
     } else if (ref.types === COMPILER_LOCAL_REFERENCE_TYPE) {
@@ -619,7 +629,7 @@ CompilerContext.prototype.compileEvaluateArguments = function(args) {
 };
 
 CompilerContext.prototype.compileRunningPos = function(pos) {
-    this.text("setRunningPosCompiled(" + pos + ");");
+    this.text("runningSourcePos= " + pos + ";");
 };
 
 CompilerContext.prototype.openLabel = function(identifier) {
@@ -639,11 +649,19 @@ CompilerContext.prototype.findLabel = function(identifier) {
         if (identifier === this.labels[i]) return "L" + i;
     }
     assert(false, identifier);
-}
+};
 
 CompilerContext.prototype.compileLabelset = function(labelset) {
     if (!labelset) return;
     for (var i = 0; i < labelset.length; i++) {
         this.text(this.findLabel(labelset[i]) + ":");
     }
-}
+};
+
+CompilerContext.prototype.stepsCheckpoint = function(flag) {
+    var s = this.texts.length - this.lastCheckpoint + 1;
+    if (flag === 'check') s++;
+    this.text("stepsRemained-= " + s + ";");
+    if (flag === 'check') this.text("if(stepsRemained<0)throw StepsOverflow();");
+    if (flag !== 'cond') this.lastCheckpoint = this.texts.length;
+};

@@ -829,7 +829,6 @@ function Date_prototype_toJSON(thisValue, argumentsList) {
     if (Type(tv) === TYPE_Number && isFinite(tv) === false) return null;
     var toISO = O.Get("toISOString");
     if (IsCallable(toISO) === false) throw VMTypeError();
-    setRunningPos();
     return toISO.Call(O, []);
 }
 

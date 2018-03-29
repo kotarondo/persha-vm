@@ -226,7 +226,6 @@ function Object_prototype_toLocaleString(thisValue, argumentsList) {
     var O = ToObject(thisValue);
     var toString = O.Get("toString");
     if (IsCallable(toString) === false) throw VMTypeError();
-    setRunningPos();
     return toString.Call(O, []);
 }
 

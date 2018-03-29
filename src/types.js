@@ -408,7 +408,6 @@ function specialGet(base, P) {
         assert(IsAccessorDescriptor(desc), desc);
         var getter = desc.Get;
         if (getter === undefined) return undefined;
-        setRunningPos();
         return getter.Call(base, []);
     }
 }
@@ -446,7 +445,6 @@ function specialPut(base, P, W, Throw) {
     var desc = O.GetProperty(P);
     if (IsAccessorDescriptor(desc) === true) {
         var setter = desc.Set;
-        setRunningPos();
         setter.Call(base, [W]);
     } else if (Throw === true) throw VMTypeError();
     return;
@@ -605,7 +603,6 @@ function default_Get(P) {
         assert(IsAccessorDescriptor(desc), desc);
         var getter = desc.Get;
         if (getter === undefined) return undefined;
-        setRunningPos();
         return getter.Call(O, []);
     }
 }
@@ -624,7 +621,6 @@ function default_FastGet(P) {
         assert(IsAccessorDescriptor(desc), desc);
         var getter = desc.Get;
         if (getter === undefined) return undefined;
-        setRunningPos();
         return getter.Call(O, []);
     }
 }
@@ -675,7 +671,6 @@ function default_Put(P, V, Throw) {
     if (IsAccessorDescriptor(desc) === true) {
         var setter = desc.Set;
         assert(setter !== undefined, desc);
-        setRunningPos();
         setter.Call(O, [V]);
     } else {
         var newDesc = DataPropertyDescriptor(V, true, true, true);
@@ -737,13 +732,11 @@ function default_DefaultValue(hint) {
     if (hint === TYPE_String) {
         var toString = O.Get("toString");
         if (IsCallable(toString) === true) {
-            setRunningPos();
             var str = toString.Call(O, []);
             if (Type(str) !== TYPE_Object) return str;
         }
         var valueOf = O.Get("valueOf");
         if (IsCallable(valueOf) === true) {
-            setRunningPos();
             var val = valueOf.Call(O, []);
             if (Type(val) !== TYPE_Object) return val;
         }
@@ -752,13 +745,11 @@ function default_DefaultValue(hint) {
     if (hint === TYPE_Number) {
         var valueOf = O.Get("valueOf");
         if (IsCallable(valueOf) === true) {
-            setRunningPos();
             var val = valueOf.Call(O, []);
             if (Type(val) !== TYPE_Object) return val;
         }
         var toString = O.Get("toString");
         if (IsCallable(toString) === true) {
-            setRunningPos();
             var str = toString.Call(O, []);
             if (Type(str) !== TYPE_Object) return str;
         }

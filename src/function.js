@@ -116,7 +116,7 @@ function Function_ClassCall(thisValue, argumentsList) {
         }
         runningFunction = F;
         runningCode = code;
-        setRunningPos(0);
+        runningSourcePos = 0;
         return F.Code.evaluate(F, ThisBinding, argumentsList);
     } finally {
         exitExecutionContext();
@@ -133,7 +133,6 @@ function Function_ClassConstruct(argumentsList) {
     } else {
         obj.Prototype = realm.Object_prototype;
     }
-    setRunningPos();
     var result = F.Call(obj, argumentsList);
     if (typeof(result) === 'object' && result !== null) return result;
     return obj;

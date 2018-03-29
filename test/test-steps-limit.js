@@ -20,9 +20,11 @@ function test_limit(code, limit) {
     }
 }
 
-test_limit(`for(var i=0;;i++);`);
-test_limit(`while(1);`);
-test_limit(`do;while(1);`);
-test_limit(`void function f(){f()}()`, 10000);
+test_limit(`void function(){for(;;);}()`);
+test_limit(`void function(){for(;;)continue;}()`);
+test_limit(`void function(){for(var i;;);}()`);
+test_limit(`void function(){while(1);}()`);
+test_limit(`void function(){do;while(1);}()`);
+test_limit(`void function f(){f()}()`, 1000);
 
 test_success()

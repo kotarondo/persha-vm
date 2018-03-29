@@ -71,7 +71,6 @@ function Array_prototype_toString(thisValue, argumentsList) {
     var array = ToObject(thisValue);
     var func = array.Get("join");
     if (IsCallable(func) === false) return Object_prototype_toString(array, []);
-    setRunningPos();
     return func.Call(array, []);
 }
 
@@ -90,7 +89,6 @@ function Array_prototype_toLocaleString(thisValue, argumentsList) {
         if (IsCallable(func) === false) throw VMTypeError();
         // specification Bug 62
         //var R = func.Call(elementObj, []);
-        setRunningPos();
         var R = func.Call(firstElement, []);
         var R = ToString(R);
         // end of bug fix
@@ -107,7 +105,6 @@ function Array_prototype_toLocaleString(thisValue, argumentsList) {
             if (IsCallable(func) === false) throw VMTypeError();
             // specification Bug 62
             //var R = func.Call(elementObj, []);
-            setRunningPos();
             var R = func.Call(nextElement, []);
             var R = ToString(R);
             // end of bug fix
@@ -378,7 +375,6 @@ function Array_prototype_sort(thisValue, argumentsList) {
         if (y === undefined) return -1;
         if (comparefn !== undefined) {
             if (IsCallable(comparefn) === false) throw VMTypeError();
-            setRunningPos();
             return comparefn.Call(undefined, [x, y]);
         }
         var xString = ToString(x);
@@ -577,7 +573,6 @@ function Array_prototype_every(thisValue, argumentsList) {
         var kPresent = O.HasProperty(Pk);
         if (kPresent === true) {
             var kValue = O.Get(Pk);
-            setRunningPos();
             var testResult = callbackfn.Call(T, [kValue, k, O]);
             if (ToBoolean(testResult) === false) return false;
         }
@@ -604,7 +599,6 @@ function Array_prototype_some(thisValue, argumentsList) {
         var kPresent = O.HasProperty(Pk);
         if (kPresent === true) {
             var kValue = O.Get(Pk);
-            setRunningPos();
             var testResult = callbackfn.Call(T, [kValue, k, O]);
             if (ToBoolean(testResult) === true) return true;
         }
@@ -631,7 +625,6 @@ function Array_prototype_forEach(thisValue, argumentsList) {
         var kPresent = O.HasProperty(Pk);
         if (kPresent === true) {
             var kValue = O.Get(Pk);
-            setRunningPos();
             callbackfn.Call(T, [kValue, k, O]);
         }
         k++;
@@ -658,7 +651,6 @@ function Array_prototype_map(thisValue, argumentsList) {
         var kPresent = O.HasProperty(Pk);
         if (kPresent === true) {
             var kValue = O.Get(Pk);
-            setRunningPos();
             var mappedValue = callbackfn.Call(T, [kValue, k, O]);
             A.DefineOwnProperty(Pk, DataPropertyDescriptor(mappedValue, true, true, true), false);
         }
@@ -687,7 +679,6 @@ function Array_prototype_filter(thisValue, argumentsList) {
         var kPresent = O.HasProperty(Pk);
         if (kPresent === true) {
             var kValue = O.Get(Pk);
-            setRunningPos();
             var selected = callbackfn.Call(T, [kValue, k, O]);
             if (ToBoolean(selected) === true) {
                 A.DefineOwnProperty(ToString(to), DataPropertyDescriptor(kValue, true, true, true), false);
@@ -727,7 +718,6 @@ function Array_prototype_reduce(thisValue, argumentsList) {
         var kPresent = O.HasProperty(Pk);
         if (kPresent === true) {
             var kValue = O.Get(Pk);
-            setRunningPos();
             var accumulator = callbackfn.Call(undefined, [accumulator, kValue, k, O]);
         }
         k++;
@@ -763,7 +753,6 @@ function Array_prototype_reduceRight(thisValue, argumentsList) {
         var kPresent = O.HasProperty(Pk);
         if (kPresent === true) {
             var kValue = O.Get(Pk);
-            setRunningPos();
             var accumulator = callbackfn.Call(undefined, [accumulator, kValue, k, O]);
         }
         k--;

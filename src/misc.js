@@ -82,7 +82,6 @@ function OpaqueFunction_ClassConstruct(argumentsList) {
     } else {
         obj.Prototype = realm.Object_prototype;
     }
-    setRunningPos();
     var result = F.Call(obj, argumentsList);
     if (typeof(result) === 'object' && result !== null) return result;
     return obj;
@@ -158,7 +157,7 @@ function applySystemHandler(name, argumentsList) {
         ThisBinding = realm.theGlobalObject;
         runningFunction = undefined;
         runningCode = undefined;
-        setRunningPos(0);
+        runningSourcePos = 0;
         var result = F.Call(null, argumentsList);
     } catch (e) {
         if (e instanceof ErrorCapsule) e = e.error;

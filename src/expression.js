@@ -169,8 +169,10 @@ function PropertyAccessor(base, name, strict) {
         if (!(baseValue.types.isNotUndefined() && baseValue.types.isNotNull())) {
             propertyNameValue = ctx.unify(propertyNameValue);
             baseValue = ctx.unify(baseValue);
-            ctx.text("if(" + baseValue.name + " ===undefined|| " + baseValue.name + " ===null)" + //
-                "throwPropertyAccessorError(" + baseValue.name + "," + propertyNameValue.name + ");");
+            ctx.text("if(" + baseValue.name + " ===undefined|| " + baseValue.name + " ===null){");
+            ctx.stepsCheckpoint('cond');
+            ctx.text("throwPropertyAccessorError(" + baseValue.name + "," + propertyNameValue.name + ");");
+            ctx.text("}");
         }
         if (!propertyNameValue.types.isNotObject()) {
             propertyNameValue = ctx.defineValue("ToPropertyName(" + propertyNameValue.name + ")");
@@ -197,12 +199,13 @@ function NewOperator(expression, args) {
         var cntr = ctx.compileGetValue(ref);
         var argList = ctx.compileEvaluateArguments(args);
         if (cntr.types.isNotObject()) {
+            ctx.stepsCheckpoint('cond');
             ctx.text("throwNotAFunctionError(" + cntr.name + ");");
             return COMPILER_UNDEFINED_VALUE;
         }
         cntr = ctx.unify(cntr);
+        ctx.stepsCheckpoint('check');
         ctx.text("if(! " + cntr.name + " ||! " + cntr.name + " .Construct)throwNotAFunctionError(" + cntr.name + ");");
-        ctx.text("setRunningPos();");
         var mval = ctx.defineValue(cntr.name + " .Construct(" + argList.name + ")");
         return mval;
     });
@@ -214,10 +217,12 @@ function FunctionCall(expression, args, strict) {
         var func = ctx.compileGetValue(ref);
         var argList = ctx.compileEvaluateArguments(args);
         if (func.types.isNotObject()) {
+            ctx.stepsCheckpoint('cond');
             ctx.text("throwNotAFunctionError(" + func.name + ");");
             return COMPILER_UNDEFINED_VALUE;
         }
         func = ctx.unify(func);
+        ctx.stepsCheckpoint('check');
         ctx.text("if(! " + func.name + " ||! " + func.name + " .Call)throwNotAFunctionError(" + func.name + ");");
         if (ref.types === COMPILER_PROPERTY_REFERENCE_TYPE) {
             var thisValue = ref.base;
@@ -235,7 +240,6 @@ function FunctionCall(expression, args, strict) {
             assert(ref.types.isValue(), ref); // provided that all expressions have own compilers
             var thisValue = COMPILER_UNDEFINED_VALUE;
         }
-        ctx.text("setRunningPos();");
         if (ref.name === '"eval"' && ref.types === COMPILER_IDENTIFIER_REFERENCE_TYPE) {
             ctx.text("if(" + func.name + " ===realm.theEvalFunction)");
             var mval = ctx.defineValue("Global_eval(" + thisValue.name + "," + argList.name + ",true," + strict +
@@ -533,11 +537,15 @@ function instanceofOperator(leftExpression, rightExpression) {
         var rref = ctx.compileExpression(rightExpression);
         var rval = ctx.compileGetValue(rref);
         if (rval.types.isNotObject()) {
+            ctx.stepsCheckpoint('cond');
             ctx.text("throw VMTypeError();");
             return COMPILER_FALSE_VALUE;
         }
         rval = ctx.unify(rval);
-        ctx.text("if(! " + rval.name + " || " + rval.name + " .HasInstance===undefined)throw VMTypeError();");
+        ctx.text("if(! " + rval.name + " || " + rval.name + " .HasInstance===undefined){");
+        ctx.stepsCheckpoint('cond');
+        ctx.text("throw VMTypeError();");
+        ctx.text("}");
         return ctx.defineBoolean(rval.name + " .HasInstance(" + lval.name + ")");
     });
 }
@@ -549,11 +557,15 @@ function inOperator(leftExpression, rightExpression) {
         var rref = ctx.compileExpression(rightExpression);
         var rval = ctx.compileGetValue(rref);
         if (rval.types.isNotObject()) {
+            ctx.stepsCheckpoint('cond');
             ctx.text("throw VMTypeError();");
             return COMPILER_FALSE_VALUE;
         }
         rval = ctx.unify(rval);
-        ctx.text("if(typeof(" + rval.name + ")!=='object'|| " + rval.name + " ===null)throw VMTypeError();");
+        ctx.text("if(typeof(" + rval.name + ")!=='object'|| " + rval.name + " ===null){");
+        ctx.stepsCheckpoint('cond');
+        ctx.text("throw VMTypeError();");
+        ctx.text("}");
         var lval = ctx.compileToString(lval);
         return ctx.defineBoolean(rval.name + " .HasProperty(" + lval.name + ")");
     });
@@ -664,9 +676,11 @@ function LogicalAndOperator(leftExpression, rightExpression) {
             return ctx.compileGetValue(rref);
         }
         lval = ctx.toMergeable(lval);
+        ctx.stepsCheckpoint();
         ctx.text("if(" + lval.name + "){");
         var rref = ctx.compileExpression(rightExpression);
         ctx.merge(lval, ctx.compileGetValue(rref));
+        ctx.stepsCheckpoint();
         ctx.text("}");
         return lval;
     });
@@ -684,9 +698,11 @@ function LogicalOrOperator(leftExpression, rightExpression) {
             return ctx.compileGetValue(rref);
         }
         lval = ctx.toMergeable(lval);
+        ctx.stepsCheckpoint();
         ctx.text("if(! " + lval.name + "){");
         var rref = ctx.compileExpression(rightExpression);
         ctx.merge(lval, ctx.compileGetValue(rref));
+        ctx.stepsCheckpoint();
         ctx.text("}");
         return lval;
     });
@@ -696,13 +712,16 @@ function ConditionalOperator(condition, firstExpression, secondExpression) {
     return CompilerContext.expression(function(ctx) {
         var lref = ctx.compileExpression(condition);
         var lval = ctx.compileGetValue(lref);
+        ctx.stepsCheckpoint();
         ctx.text("if(" + lval.name + "){");
         var trueRef = ctx.compileExpression(firstExpression);
         var mval = ctx.compileGetValue(trueRef);
         mval = ctx.toMergeable(mval);
+        ctx.stepsCheckpoint();
         ctx.text("}else{");
         var falseRef = ctx.compileExpression(secondExpression);
         ctx.merge(mval, ctx.compileGetValue(falseRef));
+        ctx.stepsCheckpoint();
         ctx.text("}");
         return mval;
     });

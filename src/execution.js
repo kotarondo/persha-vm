@@ -208,20 +208,8 @@ function ErrorCapsule(error) {
     this.error = error;
 }
 
-function setRunningPos(pos) {
-    if (0 <= pos) runningSourcePos = pos;
-    if (stepsRemained < 0) {
-        throw new ErrorCapsule(VMRangeError("steps overflow"));
-    }
-    stepsRemained -= 100;
-}
-
-function setRunningPosCompiled(pos) {
-    if (0 <= pos) runningSourcePos = pos;
-    if (stepsRemained < 0) {
-        throw new ErrorCapsule(VMRangeError("steps overflow"));
-    }
-    stepsRemained -= 1;
+function StepsOverflow() {
+    return new ErrorCapsule(VMRangeError("steps overflow"));
 }
 
 function saveExecutionContext() {
@@ -548,7 +536,6 @@ function Global_FastGetBindingValue(N, S) {
         if (getter === undefined) {
             return undefined;
         }
-        setRunningPos();
         return getter.Call(binding, []);
     }
 }
