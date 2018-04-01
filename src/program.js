@@ -44,6 +44,7 @@ function SourceElements(statements) {
     if (statements.length === 0) return undefined;
 
     if (statements.length === 1) var evaluate = function() {
+        stepsCheckpoint(6);
         try {
             return statements[0]();
         } catch (V) {
@@ -53,9 +54,11 @@ function SourceElements(statements) {
     };
 
     else var evaluate = function() {
+        stepsCheckpoint(6);
         try {
             var headResult = statements[0]();
             for (var i = 1; i < statements.length; i++) {
+                stepsCheckpoint(8, 'check');
                 if (headResult.type !== "normal") return headResult;
                 var tailResult = statements[i]();
                 if (tailResult.value === empty) {

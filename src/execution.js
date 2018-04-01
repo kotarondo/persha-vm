@@ -212,6 +212,11 @@ function StepsOverflow() {
     return new ErrorCapsule(VMRangeError("steps overflow"));
 }
 
+function stepsCheckpoint(s, flag) {
+    stepsRemained -= s;
+    if (flag === 'check' && stepsRemained < 0) throw StepsOverflow();
+}
+
 function saveExecutionContext() {
     outerExecutionContext = ({
         LexicalEnvironment,

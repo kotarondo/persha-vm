@@ -455,21 +455,21 @@ const Parser = (function() {
                 return ForVarInStatement(variableDeclarationList[0], expression, statement, labelset, strict, pos1, pos2);
             }
             expectingToken(';');
+            var pos1 = tokenPos;
             if (!testToken(';')) {
-                var pos1 = tokenPos;
                 var testExpression = readExpression();
                 expectingToken(';');
             }
+            var pos2 = tokenPos;
             if (!testToken(')')) {
-                var pos2 = tokenPos;
                 var postExpression = readExpression();
                 expectingToken(')');
             }
             var statement = readStatement();
             return ForVarStatement(variableDeclarationList, testExpression, postExpression, statement, labelset, pos1, pos2);
         }
+        var pos1 = tokenPos;
         if (!testToken(';')) {
-            var pos1 = tokenPos;
             var expressionNoIn = readExpression(true); // NoIn
             if (testToken("in")) {
                 if (expressionNoIn !== lastLeftHandSide) throw SyntaxError(prevTokenPos);
@@ -485,13 +485,13 @@ const Parser = (function() {
             }
             expectingToken(';');
         }
+        var pos2 = tokenPos;
         if (!testToken(';')) {
-            var pos2 = tokenPos;
             var testExpression = readExpression();
             expectingToken(';');
         }
+        var pos3 = tokenPos;
         if (!testToken(')')) {
-            var pos3 = tokenPos;
             var postExpression = readExpression();
             expectingToken(')');
         }
@@ -500,6 +500,7 @@ const Parser = (function() {
     }
 
     function readContinueStatement() {
+        var pos = tokenPos;
         proceedToken();
         if (isIdentifierName && !isLineSeparatedAhead) {
             var identifier = expectingIdentifier();
@@ -507,7 +508,7 @@ const Parser = (function() {
             if (labelset === undefined) throw SyntaxError(prevTokenPos);
         } else if (stack.iterables === 0) throw SyntaxError(prevTokenPos);
         expectingAutoSemicolon();
-        return ContinueStatement(identifier);
+        return ContinueStatement(identifier, pos);
     }
 
     function readBreakStatement() {
