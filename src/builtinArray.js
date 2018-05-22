@@ -343,16 +343,12 @@ function Array_prototype_sort(thisValue, argumentsList) {
         for (var i = 0; i < l; i++) {
             var q = perm[i];
             var c = (q === p) ? 0 : SortCompare(q, p);
-            switch (c) {
-                case -1:
-                    lower.push(q);
-                    break;
-                case 0:
-                    same.push(q);
-                    break;
-                case 1:
-                    higher.push(q);
-                    break;
+            if (c < 0) {
+                lower.push(q);
+            } else if (c > 0) {
+                higher.push(q);
+            } else {
+                same.push(q);
             }
         }
         var lower = qsort(lower);
